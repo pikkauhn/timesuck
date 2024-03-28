@@ -2,37 +2,54 @@
 import React, { useEffect, useState } from 'react'
 import { FilterMatchMode } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { useRouter } from 'next/navigation';
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 
 interface Item {
-    id: String,
-    catagory: String,
-    episode_number: Number,
-    title: String,
-    description: String,
-    run_time: Number,
+    id: string,
+    catagory: Category,
+    episode_number: number,
+    title: string,
+    description: string,
+    run_time: string,
     upload_date: Date,
-    link: String
+    link: string
+}
+
+interface Category {
+    value: string,
 }
 
 const Datatable = () => {
-    const router = useRouter();
     const defaultFilters = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
     const [result, setResult] = useState<Item[] | undefined>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedItem, setSelectedItem] = useState<Item[] | null>(null);
-    const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters);
+    const [filters, setFilters] = useState<DataTableFilterMeta>({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        category: { value: null , matchMode: FilterMatchMode.EQUALS }
+    });
     const [globalFilterValue, setGlobalFilterValue] = useState('');
+    const [catagories] = useState<string[]>([
+        'True Crime',
+        'History',
+        'Serial Killer',
+        'Cult / Religion',
+        'Science / Conspiracy',
+        'Unsolved Mystery',
+        'Cryptids / Legends',
+        'Lady Sucks',
+        'Human Interest',
+    ])
 
     useEffect(() => {
         const getResults = async () => {
             try {
-                const bins = await fetch(process.env.NEXT_PUBLIC_NEXTAUTH_URL + '/api/readPodcast', {
+                const podcasts = await fetch(process.env.NEXT_PUBLIC_NEXTAUTH_URL + '/api/readPodcast', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -40,21 +57,20 @@ const Datatable = () => {
                 }).then(async (response) => {
                     if (!response.ok) {
                         console.error(`Failed to fetch data. Status: ${response.status}`)
-                    }               
+                    }
                     else {
-                        console.log(response)
-                        const binResponse = await response.json();
-                        setResult(binResponse);
+                        const podcastResponse = await response.json();
+                        setResult(podcastResponse);
                         setLoading(false);
                     }
-                });                               
+                });
             } catch (err) {
                 console.log(err);
             }
         }
         getResults();
-        
-    }, [])    
+
+    }, [])
 
     const initFilters = () => {
         setFilters(defaultFilters);
@@ -62,12 +78,11 @@ const Datatable = () => {
     };
 
     const columns = [
-        { field: 'location.address', header: 'Location' },
-        { field: 'last_emptied_at', header: 'Last Emptied' },
-        { field: 'type', header: 'Type' },
-        { field: 'status', header: 'Status' },
-        { field: 'charge', header: 'Charge' },
-
+        { field: 'episode_number', header: '#' },
+        { field: 'category', header: 'Category' },
+        { field: 'title', header: 'Title' },
+        { field: 'run_time', header: 'Run Time' },
+        { field: 'upload_date', header: 'Upload Date' },
     ]
     const clearFilter = () => {
         initFilters();
@@ -83,8 +98,40 @@ const Datatable = () => {
         setFilters((prevFilters) => ({ ...prevFilters, global: { value, matchMode: FilterMatchMode.CONTAINS } }));
     }
 
+    const categoryBodyTemplate = (rowData: Item) => {
+        const category = rowData.catagory.value
+
+        return (
+            <div className="flex">
+                <span>{category}</span>
+            </div>
+        );
+    };
+
+    const categoryItemTemplate = (option: string) => {
+        return (
+            <div className="flex">
+                <span>{option}</span>
+            </div>
+        );
+    };
+
+    const categoryRowFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
+        return (
+            <Dropdown
+                value={options.value} // Assuming options.value is already a string
+                options={catagories}
+                itemTemplate={categoryItemTemplate}
+                onChange={(e: DropdownChangeEvent) => options.filterApplyCallback(e.value)}
+                optionLabel="category"
+                placeholder="Filter Category"
+                className="p-column-filter"
+            />
+        );
+    };
+
     const onRowSelect = (event: { data: any }) => {
-        router.replace(`/Data/${event.data.id}`);
+
     };
 
     const renderHeader = () => {
@@ -109,6 +156,7 @@ const Datatable = () => {
                 value={result}
                 paginator
                 rows={20}
+                stripedRows
                 filters={filters}
                 loading={loading}
                 filterDisplay="row"
@@ -117,14 +165,17 @@ const Datatable = () => {
                 onSelectionChange={(e) => setSelectedItem(e.value as Item[])}
                 onRowSelect={onRowSelect}
                 metaKeySelection={false}
-                globalFilterFields={['BinID', 'Capacity', 'Location', 'Status', 'LastEmptied', 'Charge']}
+                globalFilterFields={['category', 'title']}
                 header={header}
-                emptyMessage="No Bins Found"
+                emptyMessage="No Sucks Found"
                 tableStyle={{ minWidth: '50rem' }}
             >
                 {columns.map((col) => {
                     return (
-                        <Column key={col.field} sortable field={col.field} header={col.header} />
+                        (col.field === 'category') ?
+                            <Column key={col.field} field={col.field} header={col.header} showFilterMenu={false} filter filterElement={categoryRowFilterTemplate} />
+                            :
+                            <Column key={col.field} sortable field={col.field} header={col.header} />
                     )
                 })
                 }

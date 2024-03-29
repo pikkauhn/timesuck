@@ -157,6 +157,7 @@ const Datatable = () => {
                 paginator
                 rows={20}
                 stripedRows
+                sortField='episode_number'
                 filters={filters}
                 loading={loading}
                 filterDisplay="row"

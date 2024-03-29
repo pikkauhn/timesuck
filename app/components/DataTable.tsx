@@ -158,6 +158,7 @@ const Datatable = () => {
                 rows={20}
                 stripedRows
                 sortField='episode_number'
+                sortOrder={-1}
                 filters={filters}
                 loading={loading}
                 filterDisplay="row"

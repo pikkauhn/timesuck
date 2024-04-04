@@ -44,10 +44,13 @@ const Datatable = () => {
         { value: 'True Crime' },
         { value: 'History' },
         { value: 'Serial Killer' },
-        { value: 'Cult / Religion' },
-        { value: 'Science / Conspiracy' },
+        { value: 'Cult' },
+        { value: 'Religion' },
+        { value: 'Conspiracy' },
+        { value: 'Science' },
         { value: 'Unsolved Mystery' },
-        { value: 'Cryptids / Legends' },
+        { value: 'Cryptids' },
+        { value: 'Legends' },
         { value: 'Lady Sucks' },
         { value: 'Human Interest' }
     ]);

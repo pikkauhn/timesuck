@@ -34,11 +34,17 @@ interface YoutubeVideos {
     position: number;
 }
 
-function removeWords(str: string, word1: string, word2: string): string {
+function removeWords(str: string, word1: string, word2: string, word3: string): string {
     let newString = str;
+    newString = newString.replace(new RegExp(/\|/g, ''), '');
+    if (newString.includes(word1)) {
     newString = newString.replace(new RegExp(word1, 'gi'), '');
+    }
     if (newString.includes(word2)) {
         newString = newString.replace(new RegExp(word2, 'gi'), '');
+    }
+    if (newString.includes(word3)) {
+        newString = newString.replace(new RegExp(word3, 'gi'), '');
     }
     return newString;
 }
@@ -69,7 +75,7 @@ export async function getUploads(): Promise<YoutubeVideos[]> {
         allVideos.push(...data.items);
         nextPageToken = data.nextPageToken;
     } while (nextPageToken);
-    
+
     if (allVideos) {
         allVideos.map((data: any, idx: number) => {
             if (data.snippet.description !== 'This video is private.' && data.snippet.title !== 'Deleted video') {
@@ -78,7 +84,7 @@ export async function getUploads(): Promise<YoutubeVideos[]> {
                 const date: Date = new Date(dateString);
                 const formattedDate: string = format(date, "MM-dd-yyyy");
                 const title = data.snippet.title;
-                const newTitle = removeWords(title, "Timesuck |", "Timesuck Podcast |")
+                const newTitle = removeWords(title, "Timesuck", "Timesuck Podcast", "Podcast")
                 details.push({
                     'title': newTitle,
                     'description': data.snippet.description,

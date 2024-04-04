@@ -34,6 +34,15 @@ interface YoutubeVideos {
     position: number;
 }
 
+function removeWords(str: string, word1: string, word2: string): string {
+    let newString = str;
+    newString = newString.replace(new RegExp(word1, 'gi'), '');
+    if (newString.includes(word2)) {
+        newString = newString.replace(new RegExp(word2, 'gi'), '');
+    }
+    return newString;
+}
+
 export async function getUploads(): Promise<YoutubeVideos[]> {
     let details: YoutubeVideos[] = [];
     const apiKey: string = process.env.NEXT_PUBLIC_YOUTUBE_API as string;
@@ -67,10 +76,11 @@ export async function getUploads(): Promise<YoutubeVideos[]> {
                 const reversedIdx = allVideos.length - idx;
                 const dateString = data.snippet.publishedAt;
                 const date: Date = new Date(dateString);
-                const formattedDate: string = format(date, "MM-dd-yyyy")
-
+                const formattedDate: string = format(date, "MM-dd-yyyy");
+                const title = data.snippet.title;
+                const newTitle = removeWords(title, "Timesuck |", "Timesuck Podcast |")
                 details.push({
-                    'title': data.snippet.title,
+                    'title': newTitle,
                     'description': data.snippet.description,
                     'videoId': 'https://www.youtube.com/watch?v=' + data.snippet.resourceId.videoId,
                     'upload_date': formattedDate,

@@ -62,15 +62,22 @@ const Datatable = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const getVideoUploads = async () => {
-        getUploads()
-            .then(podcasts => {
-                setVideos(podcasts);
-            })
-            .catch(error => {
-                console.log(error);
-            })
-    };
+
+    useEffect(() => {
+        const getVideoUploads = async () => {
+            getUploads()
+                .then(podcasts => {
+                    setVideos(podcasts);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        };
+        if (videos.length < 1) {
+            console.log('Loading Videos')
+            getVideoUploads();
+        }
+    }, [])
 
     let columns = [
         { field: 'position', header: '#' },
@@ -80,7 +87,7 @@ const Datatable = () => {
 
     if (!isMobile) {
         columns.push(
-            { field: 'upload_date', header: 'Upload Date' },            
+            { field: 'upload_date', header: 'Upload Date' },
         )
     }
 
@@ -171,12 +178,12 @@ const Datatable = () => {
                                     filterPlaceholder='Search Title'
                                 /> :
                                 (col.field === 'videoId') ?
-                                <Column key={col.field}
-                                field={col.field} header={col.header}
-                                body={linkBodyTemplate}
-                                />
-                                :
-                                <Column key={col.field} sortable field={col.field} header={col.header} />
+                                    <Column key={col.field}
+                                        field={col.field} header={col.header}
+                                        body={linkBodyTemplate}
+                                    />
+                                    :
+                                    <Column key={col.field} sortable field={col.field} header={col.header} />
                     )
                 })
                 }

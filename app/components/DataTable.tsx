@@ -4,8 +4,8 @@ import { FilterMatchMode } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { getUploads } from './system/RetrieveUploads';
 
 interface Item {
     id: string,
@@ -18,132 +18,114 @@ interface Item {
     link: string
 }
 
+interface Videos {
+    title: string;
+    description: string;
+    videoId: string;
+    upload_date: string;
+    position: number;
+}
+
 interface Category {
     value: string,
 }
 
 const Datatable = () => {
-    const defaultFilters = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    };
+    const [isMobile, setIsMobile] = useState<boolean>(false);
     const [result, setResult] = useState<Item[] | undefined>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [videos, setVideos] = useState<any>([]);
+    const [loading, setLoading] = useState<boolean>(false);
     const [selectedItem, setSelectedItem] = useState<Item[] | null>(null);
     const [filters, setFilters] = useState<DataTableFilterMeta>({
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        category: { value: null , matchMode: FilterMatchMode.EQUALS }
+        title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        category: { value: null, matchMode: FilterMatchMode.EQUALS }
     });
-    const [globalFilterValue, setGlobalFilterValue] = useState('');
-    const [catagories] = useState<string[]>([
-        'True Crime',
-        'History',
-        'Serial Killer',
-        'Cult / Religion',
-        'Science / Conspiracy',
-        'Unsolved Mystery',
-        'Cryptids / Legends',
-        'Lady Sucks',
-        'Human Interest',
-    ])
+    const [catagories] = useState<Category[]>([
+        { value: 'True Crime' },
+        { value: 'History' },
+        { value: 'Serial Killer' },
+        { value: 'Cult / Religion' },
+        { value: 'Science / Conspiracy' },
+        { value: 'Unsolved Mystery' },
+        { value: 'Cryptids / Legends' },
+        { value: 'Lady Sucks' },
+        { value: 'Human Interest' }
+    ]);
 
     useEffect(() => {
-        const getResults = async () => {
-            try {
-                const podcasts = await fetch(process.env.NEXT_PUBLIC_NEXTAUTH_URL + '/api/readPodcast', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }).then(async (response) => {
-                    if (!response.ok) {
-                        console.error(`Failed to fetch data. Status: ${response.status}`)
-                    }
-                    else {
-                        const podcastResponse = await response.json();
-                        setResult(podcastResponse);
-                        setLoading(false);
-                    }
-                });
-            } catch (err) {
-                console.log(err);
-            }
-        }
-        getResults();
+        const handleResize = () => {
+            setIsMobile(window.innerWidth > 849 ? false : true);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
 
-    }, [])
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
-    const initFilters = () => {
-        setFilters(defaultFilters);
-        setGlobalFilterValue('');
+    const getVideoUploads = async () => {
+        getUploads()
+            .then(podcasts => {
+                setVideos(podcasts);
+            })
+            .catch(error => {
+                console.log(error);
+            })
     };
 
-    const columns = [
-        { field: 'episode_number', header: '#' },
+    let columns = [
+        { field: 'position', header: '#' },
         { field: 'category', header: 'Category' },
-        { field: 'title', header: 'Title' },
-        { field: 'run_time', header: 'Run Time' },
-        { field: 'upload_date', header: 'Upload Date' },
+        { field: 'title', header: 'Title' }
     ]
-    const clearFilter = () => {
-        initFilters();
-    };
 
-    const onGlobalFilterChange = (e: { target: { value: any; }; }) => {
-        const value = e.target.value;
-        setGlobalFilterValue(value);
-    };
-
-    const searchFilter = () => {
-        const value = globalFilterValue;
-        setFilters((prevFilters) => ({ ...prevFilters, global: { value, matchMode: FilterMatchMode.CONTAINS } }));
+    if (!isMobile) {
+        columns.push(
+            { field: 'upload_date', header: 'Upload Date' },            
+        )
     }
 
-    const categoryBodyTemplate = (rowData: Item) => {
-        const category = rowData.catagory.value
+    columns.push(
+        { field: 'videoId', header: '' }
+    )
 
+    const linkBodyTemplate = (rowData: Videos) => {
+        return <a href={rowData.videoId} target='_blank'><i className='pi pi-play mr-3' /></a>
+    }
+
+    const categoryItemTemplate = (option: Category) => {
         return (
             <div className="flex">
-                <span>{category}</span>
-            </div>
-        );
-    };
-
-    const categoryItemTemplate = (option: string) => {
-        return (
-            <div className="flex">
-                <span>{option}</span>
+                <span>{option.value}</span>
             </div>
         );
     };
 
     const categoryRowFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
+        const selectedCategory = options?.value;
+
         return (
             <Dropdown
-                value={options.value} // Assuming options.value is already a string
+                value={options.value}
                 options={catagories}
                 itemTemplate={categoryItemTemplate}
                 onChange={(e: DropdownChangeEvent) => options.filterApplyCallback(e.value)}
                 optionLabel="category"
-                placeholder="Filter Category"
-                className="p-column-filter"
+                placeholder={selectedCategory ? selectedCategory : 'Filter Category'}
+                className="flex"
+                checkmark
+                showClear
             />
         );
     };
 
     const onRowSelect = (event: { data: any }) => {
-
+        // console.log(selectedItem)
     };
 
     const renderHeader = () => {
         return (
             <div>
-                <span>
-                    <span className="p-input-icon-left">
-                        <InputText id="employeeSearch" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-                        <Button className="ml-2" type="button" icon="pi pi-search" label="Search" outlined onClick={searchFilter} />
-                    </span>
-                    <Button className="ml-2" type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter} />
-                </span>
+                {/* <Button className="ml-2" type="button" label="TEST" outlined onClick={getVideoUploads} /> */}
             </div>
         )
     }
@@ -153,7 +135,7 @@ const Datatable = () => {
     return (
         <div>
             <DataTable
-                value={result}
+                value={videos}
                 paginator
                 rows={20}
                 stripedRows
@@ -166,18 +148,35 @@ const Datatable = () => {
                 selection={selectedItem ? selectedItem : null}
                 onSelectionChange={(e) => setSelectedItem(e.value as Item[])}
                 onRowSelect={onRowSelect}
-                metaKeySelection={false}
+                metaKeySelection={true}
                 globalFilterFields={['category', 'title']}
                 header={header}
                 emptyMessage="No Sucks Found"
-                tableStyle={{ minWidth: '50rem' }}
+                tableStyle={{ minWidth: '5rem' }}
             >
                 {columns.map((col) => {
                     return (
                         (col.field === 'category') ?
-                            <Column key={col.field} field={col.field} header={col.header} showFilterMenu={false} filter filterElement={categoryRowFilterTemplate} />
+                            <Column key={col.field}
+                                field={col.field} header={col.header}
+                                showFilterMenu={false} filter
+                                filterElement={categoryRowFilterTemplate}
+                            />
                             :
-                            <Column key={col.field} sortable field={col.field} header={col.header} />
+                            (col.field === 'title') ?
+                                <Column key={col.field}
+                                    field={col.field} header={col.header}
+                                    showFilterMenu={false} filter
+                                    filterField='title'
+                                    filterPlaceholder='Search Title'
+                                /> :
+                                (col.field === 'videoId') ?
+                                <Column key={col.field}
+                                field={col.field} header={col.header}
+                                body={linkBodyTemplate}
+                                />
+                                :
+                                <Column key={col.field} sortable field={col.field} header={col.header} />
                     )
                 })
                 }

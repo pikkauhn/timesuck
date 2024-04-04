@@ -11,27 +11,27 @@ const supabase = SupabaseClient.getSupabaseClient();
 const SigninButton = () => {
     const { data: session } = useSession();    
 
-    useEffect(() => {
-        let ignore = false
-        const loadData = async () => {
-          try {
-            // Notify the user that the server is spinning up
-            showMessage('warn', 'Server Spinning Up', 'Please wait...');
-            const { data:result, error } = await supabase
-            .from("users")
-            .select('firstName')
+    // useEffect(() => {
+    //     let ignore = false
+    //     const loadData = async () => {
+    //       try {
+    //         // Notify the user that the server is spinning up
+    //         showMessage('warn', 'Server Spinning Up', 'Please wait...');
+    //         const { data:result, error } = await supabase
+    //         .from("users")
+    //         .select('firstName')
             
-            // Update the message once the server is up
-            showMessage('success', 'Server is Up', 'Data loaded successfully.');
-          } catch (error) {
-            console.log(error);
-            // Notify the user about the server error
-            showMessage('error', 'Server Error', 'An error occurred.');
-          }
-        };
+    //         // Update the message once the server is up
+    //         showMessage('success', 'Server is Up', 'Data loaded successfully.');
+    //       } catch (error) {
+    //         console.log(error);
+    //         // Notify the user about the server error
+    //         showMessage('error', 'Server Error', 'An error occurred.');
+    //       }
+    //     };
     
-        loadData();
-      }, []);
+    //     loadData();
+    //   }, []);
 
     if (session && session.user) {
 

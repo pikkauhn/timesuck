@@ -9,26 +9,29 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.40.0",
+    "@supabase/supabase-js": "^2.41.1",
     "@types/nodemailer": "^6.4.14",
     "argon2": "^0.40.1",
+    "date-fns": "^3.6.0",
+    "google-auth-library": "^9.7.0",
+    "googleapis": "^134.0.0",
     "jsonwebtoken": "^9.0.2",
     "next": "14.1.4",
     "next-auth": "^4.24.7",
     "nodemailer": "^6.9.13",
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
-    "primereact": "^10.5.3",
-    "react": "^18",
-    "react-dom": "^18",
+    "primereact": "^10.6.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-otp-input": "^3.1.1",
     "timesuck": "file:"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "typescript": "^5"
+    "@types/node": "^20.12.2",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.23",
+    "typescript": "^5.4.3"
   }
 }

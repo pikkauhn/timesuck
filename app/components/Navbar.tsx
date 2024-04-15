@@ -23,7 +23,7 @@ async function Navbar() {
     }
 
     const items: MenuItem[] = [
-        { label: 'Home', url: '/', visible: show, id: 'home'},
+        { label: 'Home', url: '/', visible: true, id: 'home'},
         // { label: 'Register', url: '/Register', visible: !show, id: 'register'},
         { label: 'Administration', url: '/Admin', visible: show, id: 'admin'}
     ];

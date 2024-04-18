@@ -7,7 +7,6 @@ export async function UploadtoDB(videos: any[] | any) {
         });
 
         const responseData = await response.json();
-        console.log(responseData)
         if (responseData.message === 'Data processed successfully') {
             console.log('Podcasts upserted successfully!');
         } else {

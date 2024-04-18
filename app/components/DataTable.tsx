@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { FilterMatchMode } from 'primereact/api';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable, DataTableExpandedRows, DataTableFilterMeta, DataTableRowEvent, DataTableValueArray } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
@@ -19,6 +19,7 @@ const Datatable = () => {
     const [fromDB, setFromDB] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [selectedItem, setSelectedItem] = useState<Item[] | null>(null);
+    const [expandedRows, setExpandedRows] = useState<DataTableExpandedRows | DataTableValueArray | undefined>(undefined);
     const [checked, setChecked] = useState<boolean>(false);
     const [filters, setFilters] = useState<DataTableFilterMeta>({
         title: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -34,9 +35,8 @@ const Datatable = () => {
         { value: 'Conspiracy' },
         { value: 'Science' },
         { value: 'Unsolved Mystery' },
-        { value: 'Cryptids' },
-        { value: 'Legends' },
-        { value: 'Lady Sucks' },
+        { value: 'Cryptids and Legends' },        
+        { value: 'Lady' },
         { value: 'Human Interest' }
     ]);
 
@@ -102,6 +102,19 @@ const Datatable = () => {
             GetCategories(videos);
         }
     }, [videos]);
+
+    const allowExpansion = (rowData: Videos) => {
+        return rowData.description.length > 0;
+    };
+
+    const rowExpansionTemplate = (data: Videos) => {
+        return (
+            <div className='p-3'>
+                <h5>{data.title}</h5>
+                <p>{data.description}</p>
+            </div>
+        )
+    }
 
     let columns = [
         { field: 'position', header: '#' },
@@ -184,19 +197,19 @@ const Datatable = () => {
                 sortOrder={-1}
                 filters={filters}
                 loading={loading}
+                expandedRows={expandedRows}
+                onRowToggle={(e) => setExpandedRows(e.data)}
+                rowExpansionTemplate={rowExpansionTemplate}
                 filterDisplay="row"
-                selectionMode="single"
-                selection={selectedItem ? selectedItem : null}
-                onSelectionChange={(e) => setSelectedItem(e.value as Item[])}
-                onRowSelect={onRowSelect}
                 metaKeySelection={true}
                 globalFilterFields={['category', 'title']}
                 header={header}
                 emptyMessage="No Sucks Found"
                 tableStyle={{ minWidth: '5rem' }}
             >
+                <Column expander={allowExpansion} style={{ width: '5rem' }} />
                 {columns.map((col) => {
-                    return (
+                    return (                        
                         (col.field === 'category') ?
                             <Column key={col.field}
                                 field={col.field} header={col.header}

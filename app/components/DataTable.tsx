@@ -5,39 +5,15 @@ import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
-import { getUploads } from './system/RetrieveUploads';
-import { TriStateCheckbox, TriStateCheckboxChangeEvent} from 'primereact/tristatecheckbox';
+import { getYTUploads } from './system/GetYTVideos';
 import { classNames } from 'primereact/utils';
-import { Checkbox, CheckboxChangeEvent } from 'primereact/checkbox';
-
-interface Item {
-    id: string,
-    catagory: Category,
-    episode_number: number,
-    title: string,
-    description: string,
-    run_time: string,
-    upload_date: Date,
-    link: string
-}
-
-interface Videos {
-    title: string;
-    description: string;
-    videoId: string;
-    upload_date: string;
-    position: number;
-    shortSuck: boolean;
-}
-
-interface Category {
-    value: string,
-}
+import { Checkbox } from 'primereact/checkbox';
+import { UploadtoDB } from './system/UploadtoDB';
+import { GetDBVideos } from './system/GetDBVideos';
 
 const Datatable = () => {
     const [isMobile, setIsMobile] = useState<boolean>(false);
-    const [result, setResult] = useState<Item[] | undefined>([]);
-    const [videos, setVideos] = useState<any>([]);
+    const [videos, setVideos] = useState<Videos[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [selectedItem, setSelectedItem] = useState<Item[] | null>(null);
     const [checked, setChecked] = useState<boolean>(false);
@@ -73,23 +49,55 @@ const Datatable = () => {
 
 
     useEffect(() => {
-        const getVideoUploads = async () => {
-            getUploads()
+        const isUploadTime = () => {
+            const now = new Date();
+            const day = now.getDay();
+            const hour = now.getHours();
+
+            if (day === 1 || day === 5) {
+                if (hour >= 12) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        const upload = isUploadTime();
+        const uploadToDB = async (videos: Videos[]) => {
+            await UploadtoDB(videos);
+        }
+
+        const getDBVideos = async () => {
+            await GetDBVideos()
+            .then(podcasts => {
+                setVideos(podcasts);
+            })
+            .catch(error => {
+                console.log(error);
+            })
+        }
+
+        const getYTVideos = async () => {
+            await getYTUploads()
                 .then(podcasts => {
                     setVideos(podcasts);
                 })
                 .catch(error => {
                     console.log(error);
-                })
+                });
+
         };
-        if (videos.length < 1) {            
-            getVideoUploads();
+        if (upload) {
+            getYTVideos();
+            uploadToDB(videos);
+        }
+        if (!upload) {
+            getDBVideos();
         }
     }, [])
 
     let columns = [
         { field: 'position', header: '#' },
-        { field: 'shortSuck', header: 'Short'},
+        { field: 'shortSuck', header: 'Short' },
         { field: 'category', header: 'Category' },
         { field: 'title', header: 'Title' }
     ]
@@ -105,7 +113,7 @@ const Datatable = () => {
     )
 
     const linkBodyTemplate = (rowData: Videos) => {
-        return <a href={'/Watch/'+rowData.videoId}><i className='pi pi-play mr-3' /></a>
+        return <a href={'/Watch/' + rowData.videoId}><i className='pi pi-play mr-3' /></a>
     }
 
     const categoryItemTemplate = (option: Category) => {
@@ -121,7 +129,7 @@ const Datatable = () => {
             return <i className={classNames('pi', { 'true-icon pi-check-circle': rowData.shortSuck, 'false-icon pi-times-circle': !rowData.shortSuck })}></i>;
     }
 
-    const categoryRowFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {    
+    const categoryRowFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         const selectedCategory = options?.value;
 
         return (
@@ -140,8 +148,8 @@ const Datatable = () => {
         );
     };
 
-    const shortSuckFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {        
-        return <Checkbox checked={checked} onChange={e => {setChecked(!checked); options.filterApplyCallback(e.checked)}}  />;    
+    const shortSuckFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
+        return <Checkbox checked={checked} onChange={e => { setChecked(!checked); options.filterApplyCallback(e.checked) }} />;
     }
 
     const onRowSelect = (event: { data: any }) => {
@@ -151,7 +159,7 @@ const Datatable = () => {
     const renderHeader = () => {
         return (
             <div>
-                {/* <Button className="ml-2" type="button" label="TEST" outlined onClick={getVideoUploads} /> */}
+                {/* <Button className="ml-2" type="button" label="TEST" outlined onClick={() => UploadtoDB(videos)} /> */}
             </div>
         )
     }
@@ -161,7 +169,7 @@ const Datatable = () => {
     return (
         <div>
             <DataTable
-                value={videos}                
+                value={videos}
                 paginator
                 rows={20}
                 stripedRows
@@ -192,8 +200,8 @@ const Datatable = () => {
                             (col.field === 'title') ?
                                 <Column key={col.field}
                                     field={col.field} header={col.header}
-                                    showFilterMenu={false} filter                                    
-                                    filterField='title'                                    
+                                    showFilterMenu={false} filter
+                                    filterField='title'
                                     filterPlaceholder='Search Title'
                                 /> :
                                 (col.field === 'videoId') ?
@@ -203,16 +211,16 @@ const Datatable = () => {
                                     />
                                     :
                                     (col.field === 'shortSuck') ?
-                                    <Column key={col.field}
-                                    field={col.field} header={col.header}
-                                    dataType='boolean'
-                                    filter showFilterMenu={false}
-                                    filterElement={shortSuckFilterTemplate}
-                                    body={shortSuckBodyTemplate}
-                                    />
-                                    :
+                                        <Column key={col.field}
+                                            field={col.field} header={col.header}
+                                            dataType='boolean'
+                                            filter showFilterMenu={false}
+                                            filterElement={shortSuckFilterTemplate}
+                                            body={shortSuckBodyTemplate}
+                                        />
+                                        :
 
-                                    <Column key={col.field} sortable field={col.field} header={col.header} />
+                                        <Column key={col.field} sortable field={col.field} header={col.header} />
                     )
                 })
                 }

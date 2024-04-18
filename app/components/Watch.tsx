@@ -1,9 +1,7 @@
 'use client'
 import React from 'react'
 
-interface RequestProps {
-    videoId: string;
-}
+
 
 export default function Watch({ videoId }: RequestProps) {
 

@@ -176,15 +176,7 @@ const Datatable = () => {
     const onRowSelect = (event: { data: any }) => {
         // console.log(selectedItem)
     };
-
-    const renderHeader = () => {
-        return (
-            <div>
-            </div>
-        )
-    }
-
-    const header = renderHeader();
+    
 
     return (
         <div>
@@ -203,11 +195,10 @@ const Datatable = () => {
                 filterDisplay="row"
                 metaKeySelection={true}
                 globalFilterFields={['category', 'title']}
-                header={header}
                 emptyMessage="No Sucks Found"
                 tableStyle={{ minWidth: '5rem' }}
             >
-                <Column expander={allowExpansion} style={{ width: '5rem' }} />
+                <Column expander={allowExpansion} style={{ width: '5rem' }} header="Expand" />
                 {columns.map((col) => {
                     return (                        
                         (col.field === 'category') ?

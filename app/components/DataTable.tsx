@@ -180,7 +180,7 @@ const Datatable = () => {
                 paginator
                 rows={20}
                 stripedRows
-                sortField='episode_number'
+                sortField='position'
                 sortOrder={-1}
                 filters={filters}
                 loading={loading}

@@ -1,13 +1,9 @@
 export async function UploadtoDB(videos: any[]) {
-    const formattedVideos = videos.map((obj) => {
-        const { ['position']: _, ...rest } = obj;
-        return rest;
-    })
     try {
         const response = await fetch('/api/createPodcast', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formattedVideos),
+            body: JSON.stringify(videos),
         });
 
         const responseData = await response.json();

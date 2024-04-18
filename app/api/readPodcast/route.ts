@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 const supabase = SupabaseClient.getSupabaseClient();
 
 export async function POST(req: NextRequest) {
-    const columns = ['category', 'episode_number', 'title', 'description', 'run_time', 'upload_date', 'videoId'];
+    const columns = ['category', 'episode_number', 'title', 'description', 'run_time', 'upload_date', 'videoId', 'shortSuck', 'position'];
     const { data: podcasts, error: readPodcastError } = await supabase
         .from('Podcasts')
         .select(columns.join(', '));

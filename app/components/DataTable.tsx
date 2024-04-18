@@ -14,6 +14,8 @@ import { GetDBVideos } from './system/GetDBVideos';
 const Datatable = () => {
     const [isMobile, setIsMobile] = useState<boolean>(false);
     const [videos, setVideos] = useState<Videos[]>([]);
+    const [dbVideos, setDBVideos] = useState<Videos[]>([]);
+    const [fromDB, setFromDB] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [selectedItem, setSelectedItem] = useState<Item[] | null>(null);
     const [checked, setChecked] = useState<boolean>(false);
@@ -62,13 +64,11 @@ const Datatable = () => {
             return false;
         }
         const upload = isUploadTime();
-        const uploadToDB = async (videos: Videos[]) => {
-            await UploadtoDB(videos);
-        }
 
         const getDBVideos = async () => {
             await GetDBVideos()
             .then(podcasts => {
+                setDBVideos(podcasts);
                 setVideos(podcasts);
             })
             .catch(error => {
@@ -87,13 +87,19 @@ const Datatable = () => {
 
         };
         if (upload) {
-            getYTVideos();
-            uploadToDB(videos);
+            getDBVideos();
+            getYTVideos();            
         }
         if (!upload) {
+            setFromDB(true);
             getDBVideos();
         }
     }, [])
+
+    useEffect(() => {
+        if (dbVideos.length !== videos.length)
+        UploadtoDB(videos);
+    }, [videos]);
 
     let columns = [
         { field: 'position', header: '#' },

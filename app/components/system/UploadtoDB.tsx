@@ -1,4 +1,4 @@
-export async function UploadtoDB(videos: any[]) {
+export async function UploadtoDB(videos: any[] | any) {
     try {
         const response = await fetch('/api/createPodcast', {
             method: 'POST',
@@ -7,6 +7,7 @@ export async function UploadtoDB(videos: any[]) {
         });
 
         const responseData = await response.json();
+        console.log(responseData)
         if (responseData.message === 'Data processed successfully') {
             console.log('Podcasts upserted successfully!');
         } else {

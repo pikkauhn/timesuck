@@ -10,6 +10,7 @@ import { classNames } from 'primereact/utils';
 import { Checkbox } from 'primereact/checkbox';
 import { UploadtoDB } from './system/UploadtoDB';
 import { GetDBVideos } from './system/GetDBVideos';
+import { GetCategories } from './system/GetCategories';
 
 const Datatable = () => {
     const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -21,7 +22,7 @@ const Datatable = () => {
     const [checked, setChecked] = useState<boolean>(false);
     const [filters, setFilters] = useState<DataTableFilterMeta>({
         title: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        category: { value: null, matchMode: FilterMatchMode.EQUALS },
+        category: { value: null, matchMode: FilterMatchMode.CONTAINS },
         shortSuck: { value: null, matchMode: FilterMatchMode.EQUALS }
     });
     const [catagories] = useState<Category[]>([
@@ -88,17 +89,18 @@ const Datatable = () => {
         };
         if (upload) {
             getDBVideos();
-            getYTVideos();            
+            getYTVideos();                        
         }
-        if (!upload) {
+        if (!upload) {            
             setFromDB(true);
             getDBVideos();
         }
     }, [])
 
     useEffect(() => {
-        if (dbVideos.length !== videos.length)
-        UploadtoDB(videos);
+        if (dbVideos.length !== videos.length) {
+            GetCategories(videos);
+        }
     }, [videos]);
 
     let columns = [
@@ -165,7 +167,6 @@ const Datatable = () => {
     const renderHeader = () => {
         return (
             <div>
-                {/* <Button className="ml-2" type="button" label="TEST" outlined onClick={() => UploadtoDB(videos)} /> */}
             </div>
         )
     }

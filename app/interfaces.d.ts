@@ -57,6 +57,7 @@ interface Item {
 
 interface Videos {
     title: string;
+    category?: string;
     description: string;
     videoId: string;
     upload_date: string;

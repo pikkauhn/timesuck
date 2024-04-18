@@ -5,8 +5,7 @@ const supabase = SupabaseClient.getSupabaseClient();
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-console.log(body)
-  if (!body || !Array.isArray(body)) {
+  if (!body) {
     return NextResponse.json({ message: 'Invalid request body' }, { status: 400 });
   }
 
@@ -15,13 +14,11 @@ console.log(body)
   try {
     const { data: upsertedData, error: upsertError } = await supabase
       .from('Podcasts')
-      .upsert(podcasts, { onConflict: 'id' });
-
+      .upsert(podcasts, { onConflict: 'title' });    
     if (upsertError) {
       console.error('Error upserting data:', upsertError);
       return NextResponse.json({ message: 'Failed to process data' }, { status: 500 });
     }
-
     return NextResponse.json({ message: 'Data processed successfully' });
   } catch (error) {
     console.error('Unexpected error: ', error);

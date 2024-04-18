@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.7.1",
     "@supabase/supabase-js": "^2.41.1",
     "@types/nodemailer": "^6.4.14",
     "argon2": "^0.40.1",

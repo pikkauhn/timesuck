@@ -93,6 +93,7 @@ const Datatable = () => {
 
         if (!isUploadTime) {
             if (cachedData) {
+                console.log('cached')
                 const parsedData: Videos[] = JSON.parse(cachedData);
                 setVideos(parsedData);
             } else {

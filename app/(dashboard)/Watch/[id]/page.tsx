@@ -7,8 +7,8 @@ export default function page({ params }: {
     const watchId = params.id;
 
     return (
-        <>
-        <Watch videoId={watchId} />
-        </>
+        <div className='pageContainer'>
+            <Watch videoId={watchId} />
+        </div>
     )
 }

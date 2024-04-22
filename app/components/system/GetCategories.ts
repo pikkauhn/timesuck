@@ -49,7 +49,7 @@ export async function GetCategories(videos: Videos[]) {
             await UploadtoDB(videos[i]);            
         }
         if (data.category) {
-            console.log(data.position + 'Categorized');
+            // console.log(data.position + 'Categorized');
             timer = 100;
         }
         await new Promise((resolve) => setTimeout(resolve, timer));

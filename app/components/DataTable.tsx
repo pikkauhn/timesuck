@@ -3,12 +3,10 @@ import React, { useEffect, useState } from 'react'
 import { FilterMatchMode } from 'primereact/api';
 import { DataTable, DataTableExpandedRows, DataTableFilterMeta, DataTableRowEvent, DataTableValueArray } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
-import { Button } from 'primereact/button';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { getYTUploads } from './system/GetYTVideos';
 import { classNames } from 'primereact/utils';
 import { Checkbox } from 'primereact/checkbox';
-import { UploadtoDB } from './system/UploadtoDB';
 import { GetDBVideos } from './system/GetDBVideos';
 import { GetCategories } from './system/GetCategories';
 
@@ -16,9 +14,9 @@ const Datatable = () => {
     const [isMobile, setIsMobile] = useState<boolean>(false);
     const [videos, setVideos] = useState<Videos[]>([]);
     const [dbVideos, setDBVideos] = useState<Videos[]>([]);
+    const [ytVideos, setYTVideos] = useState<Videos[]>([]);
     const [fromDB, setFromDB] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const [selectedItem, setSelectedItem] = useState<Item[] | null>(null);
     const [expandedRows, setExpandedRows] = useState<DataTableExpandedRows | DataTableValueArray | undefined>(undefined);
     const [checked, setChecked] = useState<boolean>(false);
     const [filters, setFilters] = useState<DataTableFilterMeta>({
@@ -35,7 +33,7 @@ const Datatable = () => {
         { value: 'Conspiracy' },
         { value: 'Science' },
         { value: 'Unsolved Mystery' },
-        { value: 'Cryptids and Legends' },        
+        { value: 'Cryptids and Legends' },
         { value: 'Lady' },
         { value: 'Human Interest' }
     ]);
@@ -64,44 +62,58 @@ const Datatable = () => {
             }
             return false;
         }
-        const upload = isUploadTime();
 
         const getDBVideos = async () => {
             await GetDBVideos()
-            .then(podcasts => {
-                setDBVideos(podcasts);
-                setVideos(podcasts);
-            })
-            .catch(error => {
-                console.log(error);
-            })
+                .then(podcasts => {
+                    setDBVideos(podcasts);                    
+                })
+                .catch(error => {
+                    console.log(error);
+                })
         }
 
         const getYTVideos = async () => {
             await getYTUploads()
                 .then(podcasts => {
-                    setVideos(podcasts);
+                    setYTVideos(podcasts);
                 })
                 .catch(error => {
                     console.log(error);
                 });
 
         };
-        if (upload) {
+        const cachedData = localStorage.getItem('timeSuckCatalog');
+
+
+        if (isUploadTime()) {
             getDBVideos();
-            getYTVideos();                        
+            getYTVideos();
         }
-        if (!upload) {            
-            setFromDB(true);
-            getDBVideos();
+
+        if (!isUploadTime) {
+            if (cachedData) {
+                const parsedData: Videos[] = JSON.parse(cachedData);
+                setVideos(parsedData);
+            } else {
+                setFromDB(true);
+                getDBVideos();
+            }
         }
     }, [])
 
     useEffect(() => {
-        if (dbVideos.length !== videos.length) {
-            GetCategories(videos);
+        if (ytVideos.length !== 0) {
+            if (dbVideos.length !== 0) {            
+                if (dbVideos.length < ytVideos.length) {
+                    setVideos(ytVideos);
+                    GetCategories(videos);
+                } else {
+                    setVideos(dbVideos);
+                }
+            }
         }
-    }, [videos]);
+    }, [ytVideos]);
 
     const allowExpansion = (rowData: Videos) => {
         return rowData.description.length > 0;
@@ -176,7 +188,7 @@ const Datatable = () => {
     const onRowSelect = (event: { data: any }) => {
         // console.log(selectedItem)
     };
-    
+
 
     return (
         <div>
@@ -185,7 +197,7 @@ const Datatable = () => {
                 paginator
                 rows={20}
                 stripedRows
-                sortField='position'
+                sortField='upload_date'
                 sortOrder={-1}
                 filters={filters}
                 loading={loading}
@@ -200,7 +212,7 @@ const Datatable = () => {
             >
                 <Column expander={allowExpansion} style={{ width: '5rem' }} header="Expand" />
                 {columns.map((col) => {
-                    return (                        
+                    return (
                         (col.field === 'category') ?
                             <Column key={col.field}
                                 field={col.field} header={col.header}

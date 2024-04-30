@@ -84,18 +84,16 @@ const Datatable = () => {
 
         };
         const cachedData = localStorage.getItem('timeSuckCatalog');
+        const uploadTime = isUploadTime();
 
-
-        if (isUploadTime()) {
+        if (uploadTime) {
             getDBVideos();
             getYTVideos();
         }
-
-        if (!isUploadTime) {
-
+        
+        if (!uploadTime) {
             setFromDB(true);
             getDBVideos();
-
         }
     }, [])
 
@@ -109,7 +107,12 @@ const Datatable = () => {
                     setVideos(dbVideos);
                 }
             }
+        } else if (dbVideos.length !== 0) {
+            setVideos(dbVideos);
+        } else {
+            console.error("Database nor Youtube Connecting.")
         }
+
     }, [ytVideos, dbVideos]);
 
     const allowExpansion = (rowData: Videos) => {

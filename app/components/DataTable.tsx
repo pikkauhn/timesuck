@@ -66,7 +66,7 @@ const Datatable = () => {
         const getDBVideos = async () => {
             await GetDBVideos()
                 .then(podcasts => {
-                    setDBVideos(podcasts);                    
+                    setDBVideos(podcasts);
                 })
                 .catch(error => {
                     console.log(error);
@@ -92,19 +92,16 @@ const Datatable = () => {
         }
 
         if (!isUploadTime) {
-            if (cachedData) {
-                const parsedData: Videos[] = JSON.parse(cachedData);
-                setVideos(parsedData);
-            } else {
-                setFromDB(true);
-                getDBVideos();
-            }
+
+            setFromDB(true);
+            getDBVideos();
+
         }
     }, [])
 
     useEffect(() => {
         if (ytVideos.length !== 0) {
-            if (dbVideos.length !== 0) {            
+            if (dbVideos.length !== 0) {
                 if (dbVideos.length < ytVideos.length) {
                     setVideos(ytVideos);
                     GetCategories(videos);
